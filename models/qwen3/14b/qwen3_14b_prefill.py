@@ -147,10 +147,13 @@ def build_qwen3_14b_prefill_program(
                         for kb in pl.range(hidden_blocks):
                             k0 = kb * K_CHUNK
                             x_chunk = pl.reshape(
-                                pl.cast(
-                                    pl.slice(hidden_states, [1, TOK_TILE, K_CHUNK], [b, p0, k0],
-                                             valid_shape=[1, valid_tok, K_CHUNK]),
-                                    target_type=pl.FP32,
+                                pl.fillpad(
+                                    pl.cast(
+                                        pl.slice(hidden_states, [1, TOK_TILE, K_CHUNK], [b, p0, k0],
+                                                 valid_shape=[1, valid_tok, K_CHUNK]),
+                                        target_type=pl.FP32,
+                                    ),
+                                    pad_value=pl.PadValue.zero,
                                 ),
                                 [TOK_TILE, K_CHUNK],
                             )
@@ -167,10 +170,13 @@ def build_qwen3_14b_prefill_program(
                         for kb in pl.range(hidden_blocks):
                             k0 = kb * K_CHUNK
                             x_chunk = pl.reshape(
-                                pl.cast(
-                                    pl.slice(hidden_states, [1, TOK_TILE, K_CHUNK], [b, p0, k0],
-                                             valid_shape=[1, valid_tok, K_CHUNK]),
-                                    target_type=pl.FP32,
+                                pl.fillpad(
+                                    pl.cast(
+                                        pl.slice(hidden_states, [1, TOK_TILE, K_CHUNK], [b, p0, k0],
+                                                 valid_shape=[1, valid_tok, K_CHUNK]),
+                                        target_type=pl.FP32,
+                                    ),
+                                    pad_value=pl.PadValue.zero,
                                 ),
                                 [TOK_TILE, K_CHUNK],
                             )
@@ -466,10 +472,13 @@ def build_qwen3_14b_prefill_program(
                         # Add the residual path.
                         with pl.at(level=pl.Level.CORE_GROUP, name_hint="out_proj_residual"):
                             resid_chunk = pl.reshape(
-                                pl.cast(
-                                    pl.slice(hidden_states, [1, TOK_TILE, Q_OUT_CHUNK], [b, p0, o0],
-                                             valid_shape=[1, valid_tok, Q_OUT_CHUNK]),
-                                    target_type=pl.FP32,
+                                pl.fillpad(
+                                    pl.cast(
+                                        pl.slice(hidden_states, [1, TOK_TILE, Q_OUT_CHUNK], [b, p0, o0],
+                                                 valid_shape=[1, valid_tok, Q_OUT_CHUNK]),
+                                        target_type=pl.FP32,
+                                    ),
+                                    pad_value=pl.PadValue.zero,
                                 ),
                                 [TOK_TILE, Q_OUT_CHUNK],
                             )
