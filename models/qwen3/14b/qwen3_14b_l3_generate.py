@@ -209,15 +209,12 @@ def build_qwen3_14b_l3_generate_program(
                             for kb in pl.range(hidden_blocks):
                                 k0 = kb * K_CHUNK
                                 x_chunk = pl.reshape(
-                                    pl.fillpad(
-                                        pl.cast(
-                                            pl.slice(
-                                                current_hidden, [1, TOK_TILE, K_CHUNK], [b, p0, k0],
-                                                valid_shape=[1, valid_tok, K_CHUNK],
-                                            ),
-                                            target_type=pl.FP32,
+                                    pl.cast(
+                                        pl.slice(
+                                            current_hidden, [1, TOK_TILE, K_CHUNK], [b, p0, k0],
+                                            valid_shape=[1, valid_tok, K_CHUNK],
                                         ),
-                                        pad_value=pl.PadValue.zero,
+                                        target_type=pl.FP32,
                                     ),
                                     [TOK_TILE, K_CHUNK],
                                 )
@@ -234,15 +231,12 @@ def build_qwen3_14b_l3_generate_program(
                             for kb in pl.range(hidden_blocks):
                                 k0 = kb * K_CHUNK
                                 x_chunk = pl.reshape(
-                                    pl.fillpad(
-                                        pl.cast(
-                                            pl.slice(
-                                                current_hidden, [1, TOK_TILE, K_CHUNK], [b, p0, k0],
-                                                valid_shape=[1, valid_tok, K_CHUNK],
-                                            ),
-                                            target_type=pl.FP32,
+                                    pl.cast(
+                                        pl.slice(
+                                            current_hidden, [1, TOK_TILE, K_CHUNK], [b, p0, k0],
+                                            valid_shape=[1, valid_tok, K_CHUNK],
                                         ),
-                                        pad_value=pl.PadValue.zero,
+                                        target_type=pl.FP32,
                                     ),
                                     [TOK_TILE, K_CHUNK],
                                 )
@@ -598,17 +592,14 @@ def build_qwen3_14b_l3_generate_program(
 
                             with pl.at(level=pl.Level.CORE_GROUP, name_hint="prefill_out_proj_residual"):
                                 resid_chunk = pl.reshape(
-                                    pl.fillpad(
-                                        pl.cast(
-                                            pl.slice(
-                                                current_hidden,
-                                                [1, TOK_TILE, Q_OUT_CHUNK],
-                                                [b, p0, o0],
-                                                valid_shape=[1, valid_tok, Q_OUT_CHUNK],
-                                            ),
-                                            target_type=pl.FP32,
+                                    pl.cast(
+                                        pl.slice(
+                                            current_hidden,
+                                            [1, TOK_TILE, Q_OUT_CHUNK],
+                                            [b, p0, o0],
+                                            valid_shape=[1, valid_tok, Q_OUT_CHUNK],
                                         ),
-                                        pad_value=pl.PadValue.zero,
+                                        target_type=pl.FP32,
                                     ),
                                     [TOK_TILE, Q_OUT_CHUNK],
                                 )
@@ -811,17 +802,14 @@ def build_qwen3_14b_l3_generate_program(
                         partial_sq = pl.full([1, BATCH_TILE], dtype=pl.FP32, value=0.0)
                         for kb in pl.range(scope1_hidden_blocks):
                             k0 = kb * SCOPE1_K_CHUNK
-                            x_chunk = pl.fillpad(
-                                pl.cast(
-                                    pl.slice(
-                                        current_hidden,
-                                        [BATCH_TILE, SCOPE1_K_CHUNK],
-                                        [b0, k0],
-                                        valid_shape=[cur_valid, SCOPE1_K_CHUNK],
-                                    ),
-                                    target_type=pl.FP32,
+                            x_chunk = pl.cast(
+                                pl.slice(
+                                    current_hidden,
+                                    [BATCH_TILE, SCOPE1_K_CHUNK],
+                                    [b0, k0],
+                                    valid_shape=[cur_valid, SCOPE1_K_CHUNK],
                                 ),
-                                pad_value=pl.PadValue.zero,
+                                target_type=pl.FP32,
                             )
                             partial_sq = pl.add(
                                 partial_sq,
@@ -835,17 +823,14 @@ def build_qwen3_14b_l3_generate_program(
 
                         for kb in pl.range(scope1_hidden_blocks):
                             k0 = kb * SCOPE1_K_CHUNK
-                            x_chunk = pl.fillpad(
-                                pl.cast(
-                                    pl.slice(
-                                        current_hidden,
-                                        [BATCH_TILE, SCOPE1_K_CHUNK],
-                                        [b0, k0],
-                                        valid_shape=[cur_valid, SCOPE1_K_CHUNK],
-                                    ),
-                                    target_type=pl.FP32,
+                            x_chunk = pl.cast(
+                                pl.slice(
+                                    current_hidden,
+                                    [BATCH_TILE, SCOPE1_K_CHUNK],
+                                    [b0, k0],
+                                    valid_shape=[cur_valid, SCOPE1_K_CHUNK],
                                 ),
-                                pad_value=pl.PadValue.zero,
+                                target_type=pl.FP32,
                             )
                             gamma = pl.slice(input_rms_weight, [1, SCOPE1_K_CHUNK], [layer_idx, k0])
                             normed = pl.col_expand_mul(pl.row_expand_mul(x_chunk, inv_rms), gamma)
@@ -1185,17 +1170,14 @@ def build_qwen3_14b_l3_generate_program(
                                 o_acc = pl.matmul_acc(o_acc, a_chunk, w_chunk)
 
                         with pl.at(level=pl.Level.CORE_GROUP, name_hint="decode_out_proj_residual"):
-                            resid = pl.fillpad(
-                                pl.cast(
-                                    pl.slice(
-                                        current_hidden,
-                                        [BATCH_TILE, Q_OUT_CHUNK],
-                                        [b0, o0],
-                                        valid_shape=[cur_valid, Q_OUT_CHUNK],
-                                    ),
-                                    target_type=pl.FP32,
+                            resid = pl.cast(
+                                pl.slice(
+                                    current_hidden,
+                                    [BATCH_TILE, Q_OUT_CHUNK],
+                                    [b0, o0],
+                                    valid_shape=[cur_valid, Q_OUT_CHUNK],
                                 ),
-                                pad_value=pl.PadValue.zero,
+                                target_type=pl.FP32,
                             )
                             resid_sum = pl.add(o_acc, resid)
                             resid1_tile = pl.assemble(resid1_tile, resid_sum, [0, o0])
